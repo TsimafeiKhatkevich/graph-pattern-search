@@ -33,3 +33,26 @@ void PrintGraph(std::ostream& out, const TAdjMatrixFast& graph, bool ignoreDirec
     }
 }
 
+static const ui32 NOT_A_MARK = ui32(-1);
+
+void DFS(const ui32 vertex, const ui32 curMark, std::vector<ui32>& allMarks, const TAdjMatrix& graph) {
+    allMarks[vertex] = curMark;
+    for (auto neighbour : graph[vertex]) {
+        if (allMarks[neighbour] == NOT_A_MARK) {
+            DFS(neighbour, curMark, allMarks, graph);
+        }
+    }
+}
+
+std::vector<ui32> FindConnectedComponents(const TAdjMatrix& graph) {
+    std::vector<ui32> marks(graph.size(), NOT_A_MARK);
+    ui32 maxMark = 0;
+    for (ui32 i = 0; i < marks.size(); ++i) {
+        if (marks[i] == NOT_A_MARK) {
+            DFS(i, maxMark, marks, graph);
+            ++maxMark;
+        }
+    }
+    return marks;
+}
+

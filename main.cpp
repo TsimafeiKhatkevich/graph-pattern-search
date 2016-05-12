@@ -1,5 +1,6 @@
-#include "common.h"
+#include "pattern_search.h"
 #include "er_model.h"
+
 #include <fstream>
 
 static const ui32 N = 10;
@@ -23,16 +24,39 @@ TAdjMatrix ReadPattern(std::istream& in, bool isDirected) {
             }
         }
     }
+    return result;
+}
+
+void OutputForPlot(std::ostream& out, const std::vector<ui32>& match) {
+    for (size_t i = 0; i + 1 < match.size(); ++i) {
+        out << match[i] << " ";
+    }
+    out << match.back() << std::endl;
 }
 
 int main() {
     TERModelGenerator gGenerator;
     const auto graph = gGenerator(N, P);
     TAdjMatrixFast adjFast(*graph);
-    PrintGraph(std::cout, adjFast);
+    std::ofstream fout("model.out");
+    PrintGraph(fout, adjFast);
+    fout.close();
+    const auto comp = FindConnectedComponents(*graph);
+    for (auto mark : comp) {
+        std::cout << mark << " ";
+    }
+    std::cout << std::endl;
 
     std::ifstream fin("pattern.in");
     const auto pattern = ReadPattern(fin, IS_DIRECTED);
+    PrintGraph(std::cout, pattern);
+
+    const auto reas = GetReasonableVertices(*graph, pattern);
+    std::cout << "reasonable: ";
+    for (auto mark : reas) {
+        std::cout << ui32(mark) << " ";
+    }
+    std::cout << std::endl;
 
     return 0;
 }
