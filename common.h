@@ -15,9 +15,26 @@ using ui32 = uint32_t;
 using ui64 = uint64_t;
 
 using TEdge = std::pair<ui32, ui32>;
+/**
+ * @brief Just list of edges
+ */
 using TEdgeList = std::vector<TEdge>;
+
+/**
+ * @brief TAdjMatrix is used when you need to iterate over neighbours
+ * but edge existence check is more often action
+ */
 using TAdjMatrix = std::vector<std::unordered_set<ui32> >;
 
+/**
+ * @brief TEdgeListIndexed - is a sparse variant of adjacency matrix
+ * which is needed only if you need a lot of iterations over nodes neighbours
+ */
+using TEdgeListIndexed = std::vector<std::vector<ui32> >;
+
+/**
+ * @brief The fastest variant for edge existing checks
+ */
 class TAdjMatrixFast {
 private:
     const size_t BaseSize;
@@ -57,6 +74,28 @@ public:
     }
 
 };
+
+template<typename T>
+inline T FromTAdjMatrix(const TAdjMatrix& /*graph*/) {
+    throw std::exception("FromTAdjMatrix : unavailable type conversion\n");
+}
+
+template<>
+inline TAdjMatrixFast FromTAdjMatrix<TAdjMatrixFast>(const TAdjMatrix& graph) {
+    return TAdjMatrixFast(graph);
+}
+
+template<>
+inline TEdgeListIndexed FromTAdjMatrix<TEdgeListIndexed>(const TAdjMatrix& graph) {
+    TEdgeListIndexed result(graph.size());
+    for (size_t i = 0; i < graph.size(); ++i) {
+        result[i].reserve(graph[i].size());
+        for (auto v : graph[i]) {
+            result[i].push_back(v);
+        }
+    }
+    return result;
+}
 
 void PrintGraph(std::ostream& out, const TAdjMatrix& graph, bool ignoreDirection = true);
 

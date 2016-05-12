@@ -37,26 +37,27 @@ void OutputForPlot(std::ostream& out, const std::vector<ui32>& match) {
 int main() {
     TERModelGenerator gGenerator;
     const auto graph = gGenerator(N, P);
-    TAdjMatrixFast adjFast(*graph);
-    std::ofstream fout("model.out");
-    PrintGraph(fout, adjFast);
-    fout.close();
-    const auto comp = FindConnectedComponents(*graph);
-    for (auto mark : comp) {
-        std::cout << mark << " ";
+    {
+        std::ofstream fout("model.out");
+        PrintGraph(fout, *graph);
+        fout.close();
     }
-    std::cout << std::endl;
 
     std::ifstream fin("pattern.in");
     const auto pattern = ReadPattern(fin, IS_DIRECTED);
-    PrintGraph(std::cout, pattern);
 
-    const auto reas = GetReasonableVertices(*graph, pattern);
-    std::cout << "reasonable: ";
-    for (auto mark : reas) {
-        std::cout << ui32(mark) << " ";
+    auto vFlags = GetReasonableVertices(*graph, pattern);
+
+    std::unique_ptr<TSearchProcessorBase> sp(new TBFSearchProcessor(graph));
+    const auto result = sp->Find(pattern, vFlags);
+
+    {
+        std::ofstream fout("match.out");
+        if (result.PatternFound) {
+            OutputForPlot(fout, result.Match);
+        }
+        fout.close();
     }
-    std::cout << std::endl;
 
     return 0;
 }
