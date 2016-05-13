@@ -38,12 +38,12 @@ using TEdgeListIndexed = std::vector<std::vector<ui32> >;
 class TAdjMatrixFast {
 private:
     const size_t BaseSize;
-    std::vector<char> Data;
+    std::vector<bool> Data;
 
 public:
     TAdjMatrixFast(const size_t size)
         : BaseSize(size),
-        Data(size*size, 0)
+        Data(size*size, false)
     {
     }
 
@@ -52,25 +52,25 @@ public:
     {
         for (size_t i = 0; i < graph.size(); ++i) {
             for (const auto v : graph[i]) {
-                (*this)(i, v) = 1;
+                this->Set(i, v, true);
             }
         }
+    }
+
+    const std::vector<bool>& GetData() const {
+        return Data;
     }
 
     size_t Size() const {
         return BaseSize;
     }
 
-    char& operator ()(const ui32 i, const ui32 j) {
-        return Data[i * BaseSize + j];
-    }
-
-    const char& operator ()(const ui32 i, const ui32 j) const {
-        return Data[i * BaseSize + j];
+    void Set(const ui32 i, const ui32 j, const bool bit) {
+        Data[i * BaseSize + j] = bit;
     }
 
     bool IsEdge(const ui32 i, const ui32 j) const {
-        return Data[i * BaseSize + j] > 0;
+        return Data[i * BaseSize + j];
     }
 
 };

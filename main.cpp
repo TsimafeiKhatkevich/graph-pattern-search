@@ -3,8 +3,8 @@
 
 #include <fstream>
 
-static const ui32 N = 10;
-static const double P = 0.2;
+static const ui32 N = 200;
+static const double P = 0.02;
 static const bool IS_DIRECTED = false;
 
 TAdjMatrix ReadPattern(std::istream& in, bool isDirected) {
@@ -48,7 +48,8 @@ int main() {
 
     auto vFlags = GetReasonableVertices(*graph, pattern);
 
-    std::unique_ptr<TSearchProcessorBase> sp(new TBFSearchProcessor(graph));
+//    std::unique_ptr<TSearchProcessorBase> sp(new TBFSearchProcessor(graph));
+    std::unique_ptr<TSearchProcessorBase> sp(new TCycleDiPathSearchProcessor(graph));
     const auto result = sp->Find(pattern, vFlags);
 
     {

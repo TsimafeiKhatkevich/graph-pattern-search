@@ -8,8 +8,8 @@ private:
     const TAdjMatrixFast GraphFast;
 
 public:
-    TBFSearchProcessor(std::shared_ptr<TAdjMatrix> graph, bool SearchForInduced = false)
-        : TSearchProcessorBase(SearchForInduced, graph),
+    TBFSearchProcessor(std::shared_ptr<TAdjMatrix> graph, bool searchForInduced = false)
+        : TSearchProcessorBase(searchForInduced, graph),
         Graph(FromTAdjMatrix<TEdgeListIndexed>(*graph)),
         GraphFast(*graph)
     {
