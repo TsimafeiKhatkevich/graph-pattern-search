@@ -153,13 +153,12 @@ const std::vector<ui32>& TKeyPoints::Tuple() const {
 }
 
 
-TSearchProcessorBase::TResult TCycleDiPathSearchProcessor::Find(const TAdjMatrix& pattern, std::vector<char>& vFlags) {
+bool TCycleDiPathSearchProcessor::DoSearch(const TAdjMatrix& pattern, std::vector<char>& vFlags) {
     static const ui32 graphSize = HostGraph->size();
     const ui32 pSize = pattern.size();
     ui32 halfPSize = pSize >> 1;
     SetupTables(halfPSize + 1);
     InitFlags(&vFlags);
-    TResult result;
 
     if (pSize & 1ul) {
         TKeyPoints kp(2, vFlags);
@@ -192,22 +191,18 @@ TSearchProcessorBase::TResult TCycleDiPathSearchProcessor::Find(const TAdjMatrix
                 kp.Next();
                 continue;
             } else {
-                break;
+                Results.push_back(TMatch());
+                auto& match = Results.back();
+                match.push_back(x);
+                RestorePath(halfPSize, x, y, match);
+                match.push_back(y);
+                RestorePath(halfPSize + 1, y, x, match);
+                if (StopOnFirst) {
+                    break;
+                }
+                kp.Next();
             }
         }
-
-        if (!kp.IsValid()) {
-            return result;
-        }
-
-        auto& match = result.Match;
-        match.clear();
-        match.push_back(x);
-        RestorePath(halfPSize, x, y, match);
-        match.push_back(y);
-        RestorePath(halfPSize + 1, y, x, match);
-        result.PatternFound = true;
-        return result;
     } else {
         --halfPSize;
         TKeyPoints kp(3, vFlags);
@@ -257,23 +252,20 @@ TSearchProcessorBase::TResult TCycleDiPathSearchProcessor::Find(const TAdjMatrix
                 kp.Next();
                 continue;
             } else {
-                break;
-            }
-        }
-
-        if (!kp.IsValid()) {
-            return result;
-        }
-
-        auto& match = result.Match;
-        match = {x, y, z};
-        RestorePath(halfPSize, z, v, match);
-        match.push_back(v);
-        RestorePath(halfPSize, v, x, match);
-        if (match.size() == pSize) {
-            result.PatternFound = true;
-            result.MatchIsMapping = true;
-        }
-        return result;
+                Results.push_back({x, y, z});
+                auto& match = Results.back();
+                RestorePath(halfPSize, z, v, match);
+                match.push_back(v);
+                RestorePath(halfPSize, v, x, match);
+                if (match.size() != pSize) {
+                    Results.pop_back();
+                    continue;
+                }
+                if (StopOnFirst) {
+                    break;
+                }
+            } // if goodPath
+        } // while kp
     }
+    return !Results.empty();
 }

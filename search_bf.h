@@ -8,12 +8,12 @@ private:
     const TAdjMatrixFast GraphFast;
 
 public:
-    TBFSearchProcessor(std::shared_ptr<TAdjMatrix> graph, bool searchForInduced = false)
-        : TSearchProcessorBase(searchForInduced, graph),
+    TBFSearchProcessor(std::shared_ptr<TAdjMatrix> graph, bool stopOnFirst = false, bool saveOnlyInduced = false)
+        : TSearchProcessorBase(graph, stopOnFirst, saveOnlyInduced),
         Graph(FromTAdjMatrix<TEdgeListIndexed>(*graph)),
         GraphFast(*graph)
     {
     }
 
-    TResult Find(const TAdjMatrix& pattern, std::vector<char>& vFlags) override;
+    bool DoSearch(const TAdjMatrix& pattern, std::vector<char>& vFlags) override;
 };

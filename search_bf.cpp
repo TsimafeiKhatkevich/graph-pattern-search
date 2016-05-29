@@ -8,7 +8,7 @@ struct TBFState {
     std::vector<ui32>::const_iterator EndIt;
 };
 
-TBFSearchProcessor::TResult TBFSearchProcessor::Find(const TAdjMatrix& pattern, std::vector<char> &vFlags) {
+bool TBFSearchProcessor::DoSearch(const TAdjMatrix& pattern, std::vector<char> &vFlags) {
     const auto patternEdges = FromTAdjMatrix<TEdgeListIndexed>(pattern);
     std::vector<ui32> allVertices;
     for (ui32 i = 0; i < vFlags.size(); ++i) {
@@ -19,9 +19,7 @@ TBFSearchProcessor::TResult TBFSearchProcessor::Find(const TAdjMatrix& pattern, 
     static const ui32 undefined = ui32(-1);
     const ui32 pNodes = ui32(pattern.size());
 
-    TResult result;
-    auto& match = result.Match;
-    match.resize(pNodes, undefined);
+    TMatch match(pNodes, undefined);
 
     std::stack<TBFState> bfState;
     bfState.push({0, allVertices.begin(), allVertices.end()});
@@ -37,8 +35,7 @@ TBFSearchProcessor::TResult TBFSearchProcessor::Find(const TAdjMatrix& pattern, 
         if (cMatchIt == cur.EndIt) {
             bfState.pop();
             if (bfState.empty()) {
-                result.PatternFound = false;
-                return result;
+                return !Results.empty();
             }
             auto& prev = bfState.top();
             vFlags[*prev.MatchIt] = FLAG_AVAILABLE;
@@ -85,17 +82,17 @@ TBFSearchProcessor::TResult TBFSearchProcessor::Find(const TAdjMatrix& pattern, 
                 }
             }
         }
-        if (isFound && SearchForInduced) {
+        if (isFound && SaveOnlyInduced) {
             isFound = IsInducedPattern(*HostGraph, pattern, match, vFlags);
         }
         if (isFound) {
-            result.MatchIsMapping = true;
-            result.PatternFound = true;
-            return result;
-        } else {
-            vFlags[cMatchVal] = FLAG_AVAILABLE;
-            match[cur.PInd] = undefined;
-            ++cMatchIt;
+            Results.push_back(match);
+            if (StopOnFirst) {
+                return true;
+            }
         }
+        vFlags[cMatchVal] = FLAG_AVAILABLE;
+        match[cur.PInd] = undefined;
+        ++cMatchIt;
     }
 }

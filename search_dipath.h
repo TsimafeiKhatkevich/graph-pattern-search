@@ -62,12 +62,12 @@ public:
 
 class TCycleDiPathSearchProcessor : public TSearchProcessorBase, public TPathDichotomyChecker {
 public:
-    TCycleDiPathSearchProcessor(std::shared_ptr<TAdjMatrix> graph)
-        : TSearchProcessorBase(false, graph),
+    TCycleDiPathSearchProcessor(std::shared_ptr<TAdjMatrix> graph, bool stopOnFirst = false)
+        : TSearchProcessorBase(graph, stopOnFirst, false),
         TPathDichotomyChecker(TAdjMatrixFast(*graph))
     {
     }
 
-    TResult Find(const TAdjMatrix& pattern, std::vector<char>& vFlags) override;
+    bool DoSearch(const TAdjMatrix& pattern, std::vector<char>& vFlags) override;
 };
 

@@ -128,28 +128,33 @@ inline bool IsInducedPattern(
 }
 
 class TSearchProcessorBase {
+public:
+    using TMatch = std::vector<ui32>;
+
 protected:
-    bool SearchForInduced;
     std::shared_ptr<TAdjMatrix> HostGraph;
+    bool StopOnFirst;
+    bool SaveOnlyInduced;
+
+    std::vector<TMatch> Results;
 
 public:
-    struct TResult {
-        std::vector<ui32> Match;
-        bool PatternFound = false;
-        bool MatchIsMapping = false;
-    };
-
-    TSearchProcessorBase(bool searchForInduced, std::shared_ptr<TAdjMatrix> graph)
-        : SearchForInduced(searchForInduced)
-        , HostGraph(graph)
+    TSearchProcessorBase(std::shared_ptr<TAdjMatrix> graph, bool stopOnFirst, bool saveOnlyInduced)
+        : HostGraph(graph)
+        , StopOnFirst(stopOnFirst)
+        , SaveOnlyInduced(saveOnlyInduced)
     {
     }
 
-    virtual TResult Find(const TAdjMatrix& pattern, std::vector<char>& vFlags) = 0;
+    virtual bool DoSearch(const TAdjMatrix& pattern, std::vector<char>& vFlags) = 0;
 
-    virtual TResult Find(const TAdjMatrix &pattern) {
+    virtual bool DoSearch(const TAdjMatrix &pattern) {
         std::vector<char> vFlags(HostGraph->size(), FLAG_AVAILABLE);
-        return Find(pattern, vFlags);
+        return DoSearch(pattern, vFlags);
+    }
+
+    const std::vector<TMatch>& GetResults() const {
+        return Results;
     }
 };
 
