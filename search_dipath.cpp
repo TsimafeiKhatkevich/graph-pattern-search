@@ -85,7 +85,7 @@ bool TPathDichotomyChecker::TryGetCentral(size_t k, size_t x, size_t y, ui32& re
 
 
 bool TKeyPoints::Init() {
-    static const size_t n = Points.size();
+    const size_t n = Points.size();
     for (size_t i = 1; i <= n; ++i) {
         auto& k = Points[n - i];
         while (k < Max && Flags[k] != FLAG_AVAILABLE) {
@@ -109,7 +109,7 @@ bool TKeyPoints::Next() {
     if (!IsValid()) {
         return false;
     }
-    static const size_t n = Points.size();
+    const size_t n = Points.size();
     size_t i = 0;
 
     for (; i < n; ++i) {
@@ -154,7 +154,7 @@ const std::vector<ui32>& TKeyPoints::Tuple() const {
 
 
 bool TCycleDiPathSearchProcessor::DoSearch(const TAdjMatrix& pattern, std::vector<char>& vFlags) {
-    static const ui32 graphSize = HostGraph->size();
+    const ui32 graphSize = HostGraph->size();
     const ui32 pSize = pattern.size();
     ui32 halfPSize = pSize >> 1;
     SetupTables(halfPSize + 1);
@@ -187,10 +187,7 @@ bool TCycleDiPathSearchProcessor::DoSearch(const TAdjMatrix& pattern, std::vecto
                     }
                 }
             }
-            if (goodPath == false) {
-                kp.Next();
-                continue;
-            } else {
+            if (goodPath == true) {
                 Results.push_back(TMatch());
                 auto& match = Results.back();
                 match.push_back(x);
@@ -200,8 +197,8 @@ bool TCycleDiPathSearchProcessor::DoSearch(const TAdjMatrix& pattern, std::vecto
                 if (StopOnFirst) {
                     break;
                 }
-                kp.Next();
             }
+            kp.Next();
         }
     } else {
         --halfPSize;
@@ -247,24 +244,18 @@ bool TCycleDiPathSearchProcessor::DoSearch(const TAdjMatrix& pattern, std::vecto
                     }
                 }
             }
-            if (goodPath == false) {
-                vFlags[y] = FLAG_AVAILABLE;
-                kp.Next();
-                continue;
-            } else {
+            if (goodPath == true) {
                 Results.push_back({x, y, z});
                 auto& match = Results.back();
                 RestorePath(halfPSize, z, v, match);
                 match.push_back(v);
                 RestorePath(halfPSize, v, x, match);
-                if (match.size() != pSize) {
-                    Results.pop_back();
-                    continue;
-                }
                 if (StopOnFirst) {
                     break;
                 }
-            } // if goodPath
+            }
+            vFlags[y] = FLAG_AVAILABLE;
+            kp.Next();
         } // while kp
     }
     return !Results.empty();

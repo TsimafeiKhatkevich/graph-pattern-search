@@ -9,7 +9,7 @@
 #define UNUSED(F) \
     do { (void)(F); } while (0)
 
-#define RND_DEBUG
+//#define RND_DEBUG
 
 using ui32 = uint32_t;
 using ui64 = uint64_t;
@@ -155,6 +155,10 @@ public:
 
     const std::vector<TMatch>& GetResults() const {
         return Results;
+    }
+
+    void ClearResults() {
+        Results.clear();
     }
 };
 
